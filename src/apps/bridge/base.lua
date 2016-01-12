@@ -21,14 +21,7 @@
 --
 -- The "config" table contains configuration options specific to a
 -- derived class.  It is ignored by the base class.  A derived class
--- can access the configuration via self._conf.config.  If config is
--- not set, it is initialiezed to an empty table.
---
--- Note that it is necessary to call the method post_config() after
--- the app has been configured with engine.configure() to complete the
--- initialization.  This step will add the ringbuffers associated with
--- the ports to an internal data structure to save a lookup in the
--- input and output tables during packet processing.
+-- can access the configuration via self._conf.config.
 --
 -- To make processing in the fast path easier, each port and group is
 -- assigned a unique integer greater than zero to serve as a "handle".

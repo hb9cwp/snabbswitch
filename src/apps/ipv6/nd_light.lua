@@ -136,9 +136,6 @@ function nd_light:new (arg)
    -- Timer for retransmits of neighbor solicitations
    nh.timer_cb = function (t)
                     local nh = o._next_hop
-                    -- If nh.packet is nil the app was stopped and we
-                    -- bail out.
-                    if not nh.packet then return nil end
                     o._logger:log(string.format("Sending neighbor solicitation for next-hop %s",
                                                 ipv6:ntop(conf.next_hop)))
                     link.transmit(o.output.south, packet.clone(nh.packet))
@@ -322,6 +319,29 @@ function nd_light:stop ()
    self._next_hop.packet = nil
    packet.free(self._sna.packet)
    self._sna.packet = nil
+end
+
+function selftest ()
+   local sink = require("apps.basic.basic_apps").Sink
+   local c = config.new()
+   config.app(c, "nd1", nd_light, { local_mac = "00:00:00:00:00:01",
+                                    local_ip  = "2001:DB8::1",
+                                    next_hop  = "2001:DB8::2" })
+   config.app(c, "nd2", nd_light, { local_mac = "00:00:00:00:00:02",
+                                    local_ip  = "2001:DB8::2",
+                                    next_hop  = "2001:DB8::1" })
+   config.app(c, "sink1", sink)
+   config.app(c, "sink2", sink)
+   config.link(c, "nd1.south -> nd2.south")
+   config.link(c, "nd2.south -> nd1.south")
+   config.link(c, "sink1.tx -> nd1.north")
+   config.link(c, "nd1.north -> sink1.rx")
+   config.link(c, "sink2.tx -> nd2.north")
+   config.link(c, "nd2.north -> sink2.rx")
+   engine.configure(c)
+   engine.main({ duration = 2 })
+   assert(engine.app_table.nd1._eth_header)
+   assert(engine.app_table.nd2._eth_header)
 end
 
 function selftest ()
