@@ -112,9 +112,9 @@ Each physical Intel 82599 port supports the use of up to:
 * 64 VLANs (see the `vlan` configuration option)
 * 4 *mirror pools* (see the `mirror` configuration option)
 
-## Intel1G (apps.intel.intel1g.intel1g)
+## Intel1G (apps.intel.intel1g.Intel1g)
 
-The `intel1g` app drives one port of an Intel Gigabit Ethernet
+The `Intel1g` app drives one port of an Intel Gigabit Ethernet
 controller.
 
 Hardware support:
@@ -157,7 +157,7 @@ specified but assumed to be broadly applicable.
 *Optional*. Maximum number of packets to receive on one
 breath. Default is not specified but assumed to be broadly applicable.
 
-+— Key **loopback**
+— Key **loopback**
 *Optional*. Set to `"MAC"` for MAC loopback, or to `"PHY"` for PHY loopback modes.
 
 ## LoadGen (apps.intel.loadgen)
