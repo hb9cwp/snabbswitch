@@ -124,6 +124,7 @@ end
 
 function selftest ()
    local C = require("ffi").C
+   local ipv6 = require("lib.protocol.ipv6")
    local conf = { mode = "aes-128-gcm",
                   keymat = "00112233445566778899AABBCCDDEEFF",
                   salt = "00112233"}
