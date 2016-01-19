@@ -139,7 +139,7 @@ function M.getpclabel(state, pc, buf)
 end
 
 function M.checkstep(state, section)
---XXX	checkst(C.dasm_checkstep(state, section or -1))
+	checkst(C.dasm_checkstep(state, section or -1))
 end
 
 --get the address of a standard symbol.
