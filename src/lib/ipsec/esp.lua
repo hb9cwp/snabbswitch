@@ -139,11 +139,42 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
    d:push(ethernet:new({type=0x86dd}))
    -- Check integrity
    local p = d:packet()
-   local p2 = dec:decapsulate(enc:encapsulate(p))
+print("p.length= ", p.length)
+   --local p2 = dec:decapsulate(enc:encapsulate(p))
+   local p1 = enc:encapsulate(p)
+print("p1= ", p1)
+print("p1.length= ", p1.length)
+   local p2 = dec:decapsulate(p1)
+print("p2.length= ", p2.length)
    if p2 and p2.length == p.length and C.memcmp(p, p2, p.length) == 0 then
       print("selftest passed")
    else
       print("integrity check failed")
       os.exit(1)
    end
+end
+
+function selftestXXX ()
+   local pcap = require("apps.pcap.pcap")
+   local input_file = "apps/keyed_ipv6_tunnel/selftest.cap.input"
+   local output_file = "selftest.cap.output"
+   local conf = { mode = "aes-128-gcm",
+                  keymat = "00112233445566778899AABBCCDDEEFF",
+                  salt = "00112233"}
+   local c = config.new()
+   config.app(c, "PcapReader", pcap.PcapReader, input_file)
+   config.app(c, "Encrypt", esp_v6_encrypt, conf)
+   config.app(c, "Decrypt", esp_v6_decrypt, conf)
+   config.app(c, "PcapWriter", pcap.PcapWriter, output_file)
+   config.link(c, "PcapReader.output -> Encrypt.input")
+   config.link(c, "Encrypt.output -> Decrypt.input")
+   config.link(c, "Decrypt.output -> PcapWriter.input")
+   engine.configure(c)
+   engine.main({duration=0.1})
+   -- Check integrity
+   if io.open(input_file):read('*a') ~= io.open(output_file):read('*a') then
+      print("selftest failed")
+      os.exit(1)
+   end
+   print("selftest passed")
 end
