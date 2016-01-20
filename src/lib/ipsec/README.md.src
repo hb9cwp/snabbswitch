@@ -19,7 +19,18 @@ References:
 - [RFC 4106](https://tools.ietf.org/html/rfc4106) on using AES-GCM with IPsec ESP.
 - [LISP Data-Plane Confidentiality](https://tools.ietf.org/html/draft-ietf-lisp-crypto-02) example of a software layer above these apps that includes key exchange.
 
-![esp](.images/esp.png)
+    DIAGRAM: esp
+                +----------------+
+                |                |
+     input ---->* esp_v6_encrypt *----> output
+                |                |
+                +----------------+
+    
+                +----------------+
+                |                |
+    output <----* esp_v6_decrypt *<---- input
+                |                |
+                +----------------+
 
 — Method **esp_v6_encrypt:new** *config*
 
@@ -38,8 +49,7 @@ be a table with the following keys:
 — Method **esp_v6_encrypt:encapsulate** *packet*
 
 Returns a freshly allocated packet that is the encrypted and encapsulated
-version of *packet*. The contents of *packet* are destroyed in the
-process.
+version of *packet*.
 
 — Method **esp_v6_decrypt:decapsulate** *packet*
 
