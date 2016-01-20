@@ -19,8 +19,6 @@ References:
 - [RFC 4106](https://tools.ietf.org/html/rfc4106) on using AES-GCM with IPsec ESP.
 - [LISP Data-Plane Confidentiality](https://tools.ietf.org/html/draft-ietf-lisp-crypto-02) example of a software layer above these apps that includes key exchange.
 
-![esp](.images/esp.png)
-
 — Method **esp_v6_encrypt:new** *config*
 
 — Method **esp_v6_decrypt:new** *config*
