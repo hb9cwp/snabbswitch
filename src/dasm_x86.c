@@ -1,4 +1,4 @@
-#undef DASM_CHECKS
+#define DASM_CHECKS
 
 #include "dasm_extern.h"
 #include "dasm_proto.h"
