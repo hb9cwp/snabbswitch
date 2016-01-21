@@ -8,7 +8,7 @@ local lib = require("core.lib")
 local ffi = require("ffi")
 
 
-local esp_nh = 50 -- https://tools.ietf.org/html/rfc4303#section-2
+local esp_nh = 50	-- https://tools.ietf.org/html/rfc4303#section-2
 local esp_length = esp:sizeof()
 local esp_tail_length = esp_tail:sizeof()
 
@@ -27,7 +27,7 @@ function esp_v6_encrypt:new (conf)
    o.esp_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.aad_size)
    -- Fix me https://tools.ietf.org/html/rfc4303#section-3.3.3
    o.esp = esp:new_from_mem(o.esp_buf, esp_length)
-   o.esp:spi(0x0) -- Fix me, set esp:spi value.
+   o.esp:spi(0x8899)	-- Fix me, set esp:spi value.
    o.esp_tail = esp_tail:new({})
    return setmetatable(o, {__index=esp_v6_encrypt})
 end
@@ -62,6 +62,7 @@ function esp_v6_encrypt:encapsulate (p)
    local eth = plain:parse_match()
    local ip = plain:parse_match()
    local nh = ip:next_header()
+print("esp_v6_encrypt:encapsulate(): nh=", nh)
    local encrypted = datagram:new(self:encrypt(nh, plain:payload()))
    local _, length = encrypted:payload()
    ip:next_header(esp_nh)
@@ -109,6 +110,7 @@ function esp_v6_decrypt:decapsulate (p)
    local ip = encrypted:parse_match()
    local decrypted = nil
    if ip:next_header() == esp_nh then
+print("esp_v6_decrypt:decapsulate(): next_header()=", esp_nh)		--XXX
       local seq_no, payload, nh = self:decrypt(encrypted:payload())
       if payload and self:check_seq_no(seq_no) then
          local plain = datagram:new(payload)
@@ -134,11 +136,13 @@ function selftest ()
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 0123456789]]
    )
+print("payload.length= ", payload.length)
    local d = datagram:new(payload)
    local ip = ipv6:new({})
    ip:payload_length(packet.length(payload))
    d:push(ip)
    d:push(ethernet:new({type=0x86dd}))
+print("d.length(ethernet)= ", d:packet().length)
    -- Check integrity
    local p = d:packet()
    print("original", lib.hexdump(ffi.string(packet.data(p), packet.length(p))))
@@ -152,29 +156,4 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
       print("integrity check failed")
       os.exit(1)
    end
-end
-
-function selftestXXX ()
-   local pcap = require("apps.pcap.pcap")
-   local input_file = "apps/keyed_ipv6_tunnel/selftest.cap.input"
-   local output_file = "selftest.cap.output"
-   local conf = { mode = "aes-128-gcm",
-                  keymat = "00112233445566778899AABBCCDDEEFF",
-                  salt = "00112233"}
-   local c = config.new()
-   config.app(c, "PcapReader", pcap.PcapReader, input_file)
-   config.app(c, "Encrypt", esp_v6_encrypt, conf)
-   config.app(c, "Decrypt", esp_v6_decrypt, conf)
-   config.app(c, "PcapWriter", pcap.PcapWriter, output_file)
-   config.link(c, "PcapReader.output -> Encrypt.input")
-   config.link(c, "Encrypt.output -> Decrypt.input")
-   config.link(c, "Decrypt.output -> PcapWriter.input")
-   engine.configure(c)
-   engine.main({duration=0.1})
-   -- Check integrity
-   if io.open(input_file):read('*a') ~= io.open(output_file):read('*a') then
-      print("selftest failed")
-      os.exit(1)
-   end
-   print("selftest passed")
 end
