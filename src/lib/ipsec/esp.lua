@@ -43,8 +43,12 @@ function esp_v6_encrypt:encrypt (nh, payload, length)
    self.esp:seq_no(self:next_seq_no())
    packet.append(p, self.esp:header_ptr(), esp_length)
    packet.append(p, payload, length)
-   local pad_length = self.aes_128_gcm.blocksize
-      - ((length + esp_tail_length) % self.aes_128_gcm.blocksize)
+   local m= (length + esp_tail_length) % self.aes_128_gcm.blocksize
+   if m ==0 then
+    pad_length= 0
+   else
+    pad_length= self.aes_128_gcm.blocksize -m
+   end
    packet.append(p, self.pad_buf, pad_length)
    self.esp_tail:next_header(nh)
    self.esp_tail:pad_length(pad_length)
@@ -134,13 +138,11 @@ function selftest ()
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 0123456789]]
    )
-print("payload.length= ", payload.length)
    local d = datagram:new(payload)
    local ip = ipv6:new({})
    ip:payload_length(packet.length(payload))
    d:push(ip)
    d:push(ethernet:new({type=0x86dd}))
-print("d.length(ethernet)= ", d:packet().length)
    -- Check integrity
    local p = d:packet()
    print("original", lib.hexdump(ffi.string(packet.data(p), packet.length(p))))
