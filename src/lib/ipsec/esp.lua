@@ -62,6 +62,7 @@ function esp_v6_encrypt:encapsulate (p)
    local eth = plain:parse_match()
    local ip = plain:parse_match()
    local nh = ip:next_header()
+print("esp_v6_encrypt:encapsulate(): nh=", nh, "  esp_length=", esp_length, "  esp_tail_length=", esp_tail_length)
    local encrypted = datagram:new(self:encrypt(nh, plain:payload()))
    local _, length = encrypted:payload()
    ip:next_header(esp_nh)
@@ -108,6 +109,7 @@ function esp_v6_decrypt:decapsulate (p)
    local eth = encrypted:parse_match()
    local ip = encrypted:parse_match()
    local decrypted = nil
+print("esp_v6_decrypt:decapsulate(): next_header()=", ip:next_header())           --XXX
    if ip:next_header() == esp_nh then
       local seq_no, payload, nh = self:decrypt(encrypted:payload())
       if payload and self:check_seq_no(seq_no) then
@@ -143,11 +145,17 @@ print("payload.length= ", payload.length)
 print("d.length(ethernet)= ", d:packet().length)
    -- Check integrity
    local p = d:packet()
-   print("original", lib.hexdump(ffi.string(packet.data(p), packet.length(p))))
+   print("original\n", lib.hexdump(ffi.string(packet.data(p), packet.length(p))))
+print("p.length= ", p.length, packet.length(p))
+
    local p_enc = enc:encapsulate(packet.clone(p))
-   print("encrypted", lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+   print("encrypted\n", lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+print("p_enc.length= ", p_enc.length, packet.length(p_enc))
+
    local p2 = dec:decapsulate(p_enc)
-   print("decrypted", lib.hexdump(ffi.string(packet.data(p2), packet.length(p2))))
+   print("decrypted\n", lib.hexdump(ffi.string(packet.data(p2), packet.length(p2))))
+print("p2.length= ", p2.length, packet.length(p2))
+
    if p2 and p2.length == p.length and C.memcmp(p, p2, p.length) == 0 then
       print("selftest passed")
    else
