@@ -8,7 +8,7 @@ local lib = require("core.lib")
 local ffi = require("ffi")
 
 
-local esp_nh = 50	-- https://tools.ietf.org/html/rfc4303#section-2
+local esp_nh = 50 -- https://tools.ietf.org/html/rfc4303#section-2
 local esp_length = esp:sizeof()
 local esp_tail_length = esp_tail:sizeof()
 
@@ -27,7 +27,7 @@ function esp_v6_encrypt:new (conf)
    o.esp_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.aad_size)
    -- Fix me https://tools.ietf.org/html/rfc4303#section-3.3.3
    o.esp = esp:new_from_mem(o.esp_buf, esp_length)
-   o.esp:spi(0x8899)	-- Fix me, set esp:spi value.
+   o.esp:spi(0x0) -- Fix me, set esp:spi value.
    o.esp_tail = esp_tail:new({})
    return setmetatable(o, {__index=esp_v6_encrypt})
 end
@@ -62,7 +62,6 @@ function esp_v6_encrypt:encapsulate (p)
    local eth = plain:parse_match()
    local ip = plain:parse_match()
    local nh = ip:next_header()
-print("esp_v6_encrypt:encapsulate(): nh=", nh)
    local encrypted = datagram:new(self:encrypt(nh, plain:payload()))
    local _, length = encrypted:payload()
    ip:next_header(esp_nh)
@@ -110,7 +109,6 @@ function esp_v6_decrypt:decapsulate (p)
    local ip = encrypted:parse_match()
    local decrypted = nil
    if ip:next_header() == esp_nh then
-print("esp_v6_decrypt:decapsulate(): next_header()=", esp_nh)		--XXX
       local seq_no, payload, nh = self:decrypt(encrypted:payload())
       if payload and self:check_seq_no(seq_no) then
          local plain = datagram:new(payload)
