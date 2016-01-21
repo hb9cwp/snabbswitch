@@ -27,7 +27,7 @@ function esp_v6_encrypt:new (conf)
    o.esp_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.aad_size)
    -- Fix me https://tools.ietf.org/html/rfc4303#section-3.3.3
    o.esp = esp:new_from_mem(o.esp_buf, esp_length)
-   o.esp:spi(0x0) -- Fix me, set esp:spi value.
+   o.esp:spi(0x8899) -- Fix me, set esp:spi value.
    o.esp_tail = esp_tail:new({})
    return setmetatable(o, {__index=esp_v6_encrypt})
 end
@@ -50,6 +50,8 @@ function esp_v6_encrypt:encrypt (nh, payload, length)
    self.esp_tail:pad_length(pad_length)
    packet.append(p, self.esp_tail:header_ptr(), esp_tail_length)
    packet.append(p, self.pad_buf, self.aes_128_gcm.auth_size)
+print("esp_v6_encrypt:encrypt():  nh=",nh, "  length=", length, "  pad_length=",pad_length,
+ "  aes_128_gcm.blocksize=",self.aes_128_gcm.blocksize, "  aes_128_gcm.auth_size=",self.aes_128_gcm.auth_size)
    self.aes_128_gcm:encrypt(packet.data(p) + esp_length,
                             packet.data(p) + esp_length,
                             length + pad_length + esp_tail_length,
@@ -65,6 +67,7 @@ function esp_v6_encrypt:encapsulate (p)
 print("esp_v6_encrypt:encapsulate(): nh=", nh, "  esp_length=", esp_length, "  esp_tail_length=", esp_tail_length)
    local encrypted = datagram:new(self:encrypt(nh, plain:payload()))
    local _, length = encrypted:payload()
+print("encrypted:payload()= ", length)
    ip:next_header(esp_nh)
    ip:payload_length(length)
    encrypted:push(ip)
