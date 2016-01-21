@@ -43,8 +43,14 @@ function esp_v6_encrypt:encrypt (nh, payload, length)
    self.esp:seq_no(self:next_seq_no())
    packet.append(p, self.esp:header_ptr(), esp_length)
    packet.append(p, payload, length)
-   local pad_length = self.aes_128_gcm.blocksize
-      - ((length + esp_tail_length) % self.aes_128_gcm.blocksize)
+   --local pad_length = self.aes_128_gcm.blocksize
+   --   - ((length + esp_tail_length) % self.aes_128_gcm.blocksize)
+   local m= (length + esp_tail_length) % self.aes_128_gcm.blocksize
+   if m ==0 then
+    pad_length= 0
+   else
+    pad_length= self.aes_128_gcm.blocksize -m
+   end
    packet.append(p, self.pad_buf, pad_length)
    self.esp_tail:next_header(nh)
    self.esp_tail:pad_length(pad_length)
@@ -137,8 +143,18 @@ function selftest ()
    local payload = packet.from_string(
 [[abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
-0123456789]]
+0123456789012345678901234567890123456789012345678901234567890123456789012]]
    )
+
+--[[
+for i=0,258 do
+ if (i %128) ==0 then
+  print(i, i %128, 0, " ***")
+ end
+ print(i, i %128, 128-(i %128))
+end
+]]--
+
 print("payload.length= ", payload.length)
    local d = datagram:new(payload)
    local ip = ipv6:new({})
