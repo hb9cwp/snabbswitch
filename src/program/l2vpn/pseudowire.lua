@@ -265,7 +265,7 @@ function pseudowire:new (arg)
    local confESP = { mode = "aes-128-gcm",
                      keymat = "00112233445566778899AABBCCDDEEFF",
                      salt = "00112233"}
-   local encESP, decESP = esp_v6_encrypt:new(confESP), esp_v6_decrypt:new(confESP)
+   local encESP, decESP = esp.esp_v6_encrypt:new(confESP), esp.esp_v6_decrypt:new(confESP)
 
    -- Tunnel header
    assert(conf.tunnel, "missing tunnel configuration")
