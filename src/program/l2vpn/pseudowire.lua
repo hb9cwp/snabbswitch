@@ -621,38 +621,38 @@ function pseudowire:push()
       -- Copy the finished headers into the packet
       datagram:push_raw(self._template:data())
       --transmit(l_out, p[0])
-print("pseudowire: before encESP()")
+--print("pseudowire: before encESP()")
       --local p_enc = encESP:encapsulate(p[0])
       local p_clone= packet.clone(p[0])			-- preserve p[0] from clobbering by encapsulate()
-print("p_clone", packet.length(p_clone), lib.hexdump(ffi.string(packet.data(p_clone), packet.length(p_clone))))
+--print("p_clone", packet.length(p_clone), lib.hexdump(ffi.string(packet.data(p_clone), packet.length(p_clone))))
       local p_enc = encESP:encapsulate(p_clone)
-print("pseudowire: after encESP()")
-print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+--print("pseudowire: after encESP()")
+--print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
       packet.free(p_clone)
-print("pseudowire: after free(p_clone)")
+--print("pseudowire: after free(p_clone)")
       transmit(l_out, p_enc)
-print("pseudowire: after transmit()")
+--print("pseudowire: after transmit()")
    end
 
    l_in = self.input.uplink
    l_out = self.output.ac
    while not full(l_out) and not empty(l_in) do
-print("pseudowire: before receive()")
+--print("pseudowire: before receive()")
       --p[0] = receive(l_in)
       --p[0] = decESP:decapsulate(receive(l_in))
       local p_enc = receive(l_in)
-print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+--print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
 if p_enc.data[20] ==50 then
-print("pseudowire: before decESP()")
+--print("pseudowire: before decESP()")
       local p_dec= packet.allocate()
       p_dec = decESP:decapsulate(p_enc)
-print("pseudowire: after decESP()")
-print("p_dec", packet.length(p_dec), lib.hexdump(ffi.string(packet.data(p_dec), packet.length(p_dec))))
+--print("pseudowire: after decESP()")
+--print("p_dec", packet.length(p_dec), lib.hexdump(ffi.string(packet.data(p_dec), packet.length(p_dec))))
       ---p[0] = decESP:decapsulate(p_enc)
       p[0] = p_dec
-print("p[0]", packet.length(p[0]), lib.hexdump(ffi.string(packet.data(p[0]), packet.length(p[0]))))
+--print("p[0]", packet.length(p[0]), lib.hexdump(ffi.string(packet.data(p[0]), packet.length(p[0]))))
       packet.free(p_enc)
-print("pseudowire: after free(p_enc)")
+--print("pseudowire: after free(p_enc)")
 else
  p[0]= p_enc
 end
