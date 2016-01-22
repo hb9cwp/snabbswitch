@@ -55,7 +55,7 @@ function esp_v6_encrypt:encrypt (nh, payload, length)
    packet.append(p, self.esp_tail:header_ptr(), esp_tail_length)
    packet.append(p, self.pad_buf, self.aes_128_gcm.auth_size)
 --print("esp_v6_encrypt:encrypt():  nh=",nh, "  length=", length, "  pad_length=",pad_length,
- "  aes_128_gcm.blocksize=",self.aes_128_gcm.blocksize, "  aes_128_gcm.auth_size=",self.aes_128_gcm.auth_size)
+--      "  aes_128_gcm.blocksize=",self.aes_128_gcm.blocksize, "  aes_128_gcm.auth_size=",self.aes_128_gcm.auth_size)
    self.aes_128_gcm:encrypt(packet.data(p) + esp_length,
                             packet.data(p) + esp_length,
                             length + pad_length + esp_tail_length,
