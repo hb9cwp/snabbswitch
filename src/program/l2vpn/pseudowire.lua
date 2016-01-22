@@ -642,12 +642,21 @@ print("pseudowire: before receive()")
       --p[0] = decESP:decapsulate(receive(l_in))
       local p_enc = receive(l_in)
 print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+print("NextHeader: ", lib.hexdump(ffi.string(packet.data(p_enc[20]), 1)))
+
+if p_enc[20] ==50 then
 print("pseudowire: before decESP()")
-      p[0] = decESP:decapsulate(p_enc)
+      local p_dec= packet.allocate()
+      p_dec = decESP:decapsulate(p_enc)
+print("p_dec", packet.length(p_dec), lib.hexdump(ffi.string(packet.data(p_dec), packet.length(p_dec))))
+      ---p[0] = decESP:decapsulate(p_enc)
 print("pseudowire: after decESP()")
 print("p[0]", packet.length(p[0]), lib.hexdump(ffi.string(packet.data(p[0]), packet.length(p[0]))))
       packet.free(p_enc)
 print("pseudowire: after free(p_enc)")
+else
+ p[0]= p_enc
+end
       local datagram = self._dgram:new(p[0], ethernet, dgram_options)
       if self._filter:match(datagram:payload()) then
          datagram:pop_raw(self._decap_header_size, self._tunnel.class)
