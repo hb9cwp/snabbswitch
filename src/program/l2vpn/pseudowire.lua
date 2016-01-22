@@ -642,7 +642,7 @@ print("pseudowire: before receive()")
       --p[0] = decESP:decapsulate(receive(l_in))
       local p_enc = receive(l_in)
 print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
-if p_enc[20] ==50 then
+if p_enc.data[20] ==50 then
 print("pseudowire: before decESP()")
       local p_dec= packet.allocate()
       p_dec = decESP:decapsulate(p_enc)
