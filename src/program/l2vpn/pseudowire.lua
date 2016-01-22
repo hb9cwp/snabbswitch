@@ -41,6 +41,7 @@ local filter = require("lib.pcap.filter")
 local pcap = require("apps.pcap.pcap")
 local cc = require("program.l2vpn.control_channel")
 local ipc_mib = require("lib.ipc.shmem.mib")
+local esp = require("lib.ipsec.esp")
 
 pseudowire = subClass(nil)
 pseudowire._name = "Pseudowire"
@@ -259,6 +260,12 @@ function pseudowire:new (arg)
                                 dst = ethernet:pton('00:00:00:00:00:00'),
                                 type = 0x86dd })
    end
+
+   -- IPsec ESP
+   local confESP = { mode = "aes-128-gcm",
+                     keymat = "00112233445566778899AABBCCDDEEFF",
+                     salt = "00112233"}
+   local encESP, decESP = esp_v6_encrypt:new(confESP), esp_v6_decrypt:new(confESP)
 
    -- Tunnel header
    assert(conf.tunnel, "missing tunnel configuration")
@@ -613,13 +620,20 @@ function pseudowire:push()
 
       -- Copy the finished headers into the packet
       datagram:push_raw(self._template:data())
-      transmit(l_out, p[0])
+      --transmit(l_out, p[0])
+      local p_enc = encESP:encapsulate(p)
+      packet.free(p)
+      transmit(l_out, p_enc[0])
    end
 
    l_in = self.input.uplink
    l_out = self.output.ac
    while not full(l_out) and not empty(l_in) do
-      p[0] = receive(l_in)
+      --p[0] = receive(l_in)
+      --p[0] = decESP:decapsulate(receive(l_in))
+      local p_enc = receive(l_in)
+      p[0] = decESP:decapsulate(p_enc)
+      packet.free(p_enc)
       local datagram = self._dgram:new(p[0], ethernet, dgram_options)
       if self._filter:match(datagram:payload()) then
          datagram:pop_raw(self._decap_header_size, self._tunnel.class)

@@ -54,6 +54,8 @@ function esp_v6_encrypt:encrypt (nh, payload, length)
    self.esp_tail:pad_length(pad_length)
    packet.append(p, self.esp_tail:header_ptr(), esp_tail_length)
    packet.append(p, self.pad_buf, self.aes_128_gcm.auth_size)
+print("esp_v6_encrypt:encrypt():  nh=",nh, "  length=", length, "  pad_length=",pad_length,
+ "  aes_128_gcm.blocksize=",self.aes_128_gcm.blocksize, "  aes_128_gcm.auth_size=",self.aes_128_gcm.auth_size)
    self.aes_128_gcm:encrypt(packet.data(p) + esp_length,
                             packet.data(p) + esp_length,
                             length + pad_length + esp_tail_length,
@@ -136,7 +138,7 @@ function selftest ()
    local payload = packet.from_string(
 [[abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
-0123456789]]
+01234567890123456789012345678901234567890123456789012345678901234567890]]
    )
    local d = datagram:new(payload)
    local ip = ipv6:new({})
