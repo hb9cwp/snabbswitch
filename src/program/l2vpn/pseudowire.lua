@@ -620,15 +620,17 @@ function pseudowire:push()
 
       -- Copy the finished headers into the packet
       datagram:push_raw(self._template:data())
-      transmit(l_out, p[0])
---[[
+      --transmit(l_out, p[0])
 print("pseudowire: before encESP()")
-      local p_enc = encESP:encapsulate(p[0])
+      --local p_enc = encESP:encapsulate(p[0])
+      local p_clone= packet.clone(p[0])			-- preserve p[0] from clobbering by encapsulate()
+print("p_clone", packet.length(p_clone), lib.hexdump(ffi.string(packet.data(p_clone), packet.length(p_clone))))
+      local p_enc = encESP:encapsulate(p_clone)
 print("pseudowire: after encESP()")
---      packet.free(p)
---print("pseudowire: after free(p)")
+print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
+      packet.free(p_clone)
+print("pseudowire: after free(p_clone)")
       transmit(l_out, p_enc)
-]]--
 print("pseudowire: after transmit()")
    end
 
@@ -636,16 +638,16 @@ print("pseudowire: after transmit()")
    l_out = self.output.ac
    while not full(l_out) and not empty(l_in) do
 print("pseudowire: before receive()")
-      p[0] = receive(l_in)
---[[
+      --p[0] = receive(l_in)
       --p[0] = decESP:decapsulate(receive(l_in))
       local p_enc = receive(l_in)
+print("p_enc", packet.length(p_enc), lib.hexdump(ffi.string(packet.data(p_enc), packet.length(p_enc))))
 print("pseudowire: before decESP()")
       p[0] = decESP:decapsulate(p_enc)
 print("pseudowire: after decESP()")
+print("p[0]", packet.length(p[0]), lib.hexdump(ffi.string(packet.data(p[0]), packet.length(p[0]))))
       packet.free(p_enc)
 print("pseudowire: after free(p_enc)")
-]]--
       local datagram = self._dgram:new(p[0], ethernet, dgram_options)
       if self._filter:match(datagram:payload()) then
          datagram:pop_raw(self._decap_header_size, self._tunnel.class)
