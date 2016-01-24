@@ -23,7 +23,7 @@ local esp_v6_encrypt = {}
 
 function esp_v6_encrypt:new (conf)
    local o = esp_v6_new(conf)
-   o.pad_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.blocksize-1)
+   o.pad_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.blocksize)
    o.esp_buf = ffi.new("uint8_t[?]", o.aes_128_gcm.aad_size)
    -- Fix me https://tools.ietf.org/html/rfc4303#section-3.3.3
    o.esp = esp:new_from_mem(o.esp_buf, esp_length)
@@ -144,7 +144,7 @@ function selftest ()
 [[abcdefghijklmnopqrstuvwxyz
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 0123456789012345678901234567890123456789012345678901234567890123456789012]]
-   )
+)
 
 --[[
 for i=0,258 do
