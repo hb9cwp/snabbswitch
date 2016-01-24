@@ -73,10 +73,11 @@ function aes_128_gcm:new (keymat, salt)
    o.gcm_data = ffi.new("gcm_data[1] __attribute__((aligned(16)))")
    ASM.aes_keyexp_128_enc_avx(o.keymat, o.gcm_data[0].expanded_keys)
    ASM.aesni_gcm_precomp_avx_gen4(o.gcm_data, o.hash_subkey)
-   o.blocksize = 128/8
-   o.auth_size = 16
+   o.blocksize = 128/8		-- in Byte
+   o.auth_size = 8		-- 8, 12, or 16 Byte
    o.auth_buf = ffi.new("uint8_t[?]", o.auth_size)
-   o.aad_size = 16
+   o.aad_size = 12		-- 8, or 12 Byte (Intel code also supports 16)
+				-- currently lib.protocol.esp implements 12 Byte only
    return setmetatable(o, {__index=aes_128_gcm})
 end
 

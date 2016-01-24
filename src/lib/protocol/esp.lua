@@ -11,6 +11,7 @@ local esp = subClass(header)
 esp._name = "esp"
 esp:init(
    {
+      -- implements AAD size 12 only
       [1] = ffi.typeof[[
             struct {
                uint32_t spi;
