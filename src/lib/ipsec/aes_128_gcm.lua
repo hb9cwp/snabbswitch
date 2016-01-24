@@ -73,7 +73,7 @@ function aes_128_gcm:new (keymat, salt)
    o.gcm_data = ffi.new("gcm_data[1] __attribute__((aligned(16)))")
    ASM.aes_keyexp_128_enc_avx(o.keymat, o.gcm_data[0].expanded_keys)
    ASM.aesni_gcm_precomp_avx_gen4(o.gcm_data, o.hash_subkey)
-   o.blocksize = 128
+   o.blocksize = 128/8
    o.auth_size = 16
    o.auth_buf = ffi.new("uint8_t[?]", o.auth_size)
    o.aad_size = 16
